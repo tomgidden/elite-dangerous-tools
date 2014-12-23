@@ -2,14 +2,9 @@
     'use strict';
 
     // Dropdowns
-    var systemSel, minSel, maxSel, radSel, dfbSel;
+    var systemSel, sortbySel, minSel, maxSel, radSel, dfbSel;
 
     // Result tables
-    var dist_table = $('#dist_table');
-    var paths_table = $('#paths_table');
-    var route_table = $('#route_table');
-
-    var system, base, minV, maxV, radV, dfbV;
 
     var distances_from = function (from, min, max, maxdfb) {
         if(!min) min = -10000;
@@ -57,31 +52,32 @@
     }
 
     var update_tables = function () {
-        var i, j, k, r, d;
+        var i, j;
+        var system, base, minV, maxV, radV, dfbV;
+        var row, cell;
 
         system = systemSel.val();
         base = rares[system];
-
         minV = minSel.val();
         maxV = maxSel.val();
         radV = radSel.val();
         dfbV = dfbSel.val();
 
-        $('.sub_base').text(system);
 
-        // Take a copy of the paths header row
-        var thead = $('thead:first-child', paths_table);
-        var theadcols = $('th', thead).length;
-        thead.detach();
+        $('#dist_table').remove();
+        var table = $('<table id="dist_table">').insertAfter($('h1'));
+        var thead = $('<thead>').appendTo(table);
+        var tbody = $('<tbody>').appendTo(table);
 
-        // Clear result tables
-        $('tbody', dist_table).remove();
-        $('tbody,thead', paths_table).remove();
+        row = $('<tr>').appendTo(thead);
+        $('<th>D<sub></sub> (Ly)</th>').addClass('dist_dist').appendTo(row);
+        $('<th>').addClass('dist_system').text('System').appendTo(row);
+        $('<th>').addClass('dist_station').text('Station').appendTo(row);
+        $('<th>').addClass('dist_dfb').text('Supercruise (Ls)').appendTo(row);
 
-        // Make result tables visible
-        //        dist_table.css('display', '');
-        //        paths_table.css('display', '');
-        //        route_table.css('display', '');
+        $('h1').text("Distances from "+system);
+        
+        $('sub').text(system);
 
         // Get distances from base to other rares (unclustered)
         var dists = $.map(distances_from(base, minV, maxV, dfbV), function(v,k){return v;});
@@ -91,178 +87,62 @@
         var dists_to_base = {};
         for(i=0; i<dists.length; i++) {
             dists_to_base[dists[i].r.system] = dists[i].d;
+
+            $('<th>')
+                .addClass('xref_system')
+                .appendTo($('tr', thead))
+                .text(dists[i].r.system);
         }
 
+
         // Show main distances table
-        var dists_body = $('<tbody>').appendTo(dist_table);
+        var r, d, r2, d2;
         for(i=0; i<dists.length; i++) {
             d = dists[i].d;
             r = dists[i].r;
 
-            $('<tr>')
-                .append($('<td>').text(Math.round(d)))
-                .append($('<td>').text(r.system))
-                .append($('<td>').text(r.station))
-                .append($('<td>').text(r.dfb ? r.dfb : 'N/A')).addClass(r.dfb ? '' : 'na')
-                .appendTo(dists_body);
+            row = $('<tr>').appendTo(tbody).data('system', r.system);
+            row.append($('<td>').addClass('dist_base').text(Math.round(d)));
+            row.append($('<td>').addClass('dist_system').text(r.system));
+            row.append($('<td>').addClass('dist_station').text(r.station));
+            row.append($('<td>').addClass('dist_dfb').text(r.dfb ? r.dfb : 'N/A').addClass(r.dfb ? '' : 'na'));
+
+            for(j=0; j<dists.length; j++) {
+                cell = $('<td>').appendTo(row);
+                cell.addClass('xref_system');
+                if(i==j) {
+                    cell.addClass('x').text(0);
+                }
+                else {
+                    r2 = dists[j].r;
+                    d2 = distance_between(r, r2);
+                    cell.text(Math.round(d2));
+                    if(d2 <= radV)
+                        cell.addClass('clustered');
+                }
+            }
         }
 
+        $(document).on('click', '#dist_table thead th', function () {
+            var self = $(this);
+            var col = self.index();
 
-        var route_path = function (path) {
-            if(path.length < 2) {
-                return path;
-            }
+            var sorter = function (a, b) {
+                a = $('td', a).eq(col).text();
+                b = $('td', b).eq(col).text();
 
-            var perms = path.reduce(permute, []);
-            var min = -1, perm, d;
-            var i;
-            for(i=0; i<perms.length; i++) {
-                perm = perms[i];
-                d = measure_route(perm);
-                if(min==-1 || d < min[0])
-                    min = [d, perm];
-            }
-
-            return min[1];
-        };
-
-        var measure_route = function (route) {
-            var dist = 0;
-            var prev, cur;
-            var i;
-            for(i=0; i<route.length; i++) {
-                cur = route[i].r;
-                if(undefined === prev) {
-                    prev = cur;
-                    continue;
-                }
-                dist += distance_between(prev, cur);
-                prev = cur;
-            }
-            return dist;
-        };
-
-        var display_path = function (path) {
-            var prev = undefined;
-
-            var centre = path[Math.floor(path.length/2)];
-
-            var h = thead.clone().appendTo(paths_table);
-
-            $('tr.table_title th', h).text(centre.system+" path");
-
-            var path_body = $('<tbody>').appendTo(paths_table);
-
-            for(var k=0; k<path.length; k++) {
-                r = path[k];
-
-                // Distance from previous node in path
-                d = prev ? distance_between(prev, r) : 0;
-                prev = r;
-
-                if(!r) {
-                    console.log(path);
-                }
-
-                $('<tr>')
-                    .append($('<td>').text(Math.round(distance_between(base, path[k]))))
-                    .append($('<td>').text(Math.round(d)))
-                    .append($('<td>').text(r.system))
-                    .append($('<td>').text(r.station))
-                    .append($('<td>').text(r.dfb ? r.dfb : 'N/A')).addClass(r.dfb ? '' : 'na')
-                    .appendTo(path_body);
-            }
-        };
-        
-        var paths = function () {
-            var build_paths = function (start, dists, radV) {
-                var paths_from_start = [];
-
-                // Generate simple array of rares
-                var remaining = dists.map(function(x) { return x.r; });
-
-                // Remove start system from list of remainings (or we get a loop)
-                for(var i=0; i<remaining.length; i++) {
-                    if(remaining[i].system == start.system) {
-                        remaining.splice(i, 1);
-                        break;
-                    }
-                }
-
-                // Recursive routine to find all valid paths through rares
-                // within radV steps
-                var _build_paths = function (path, remaining) {
-                    var from = path[0];
-                    var i, d, to, nremaining, npath, c=0;
-                    var names;
-
-                    for(i=0; i<remaining.length; i++) {
-                        to = remaining[i];
-
-                        npath = null;
-                        d = distance_between(from, to);
-
-                        if(d <= radV) {
-                            c++;
-                            nremaining = remaining.slice(0,i).concat(remaining.slice(i+1));
-                            if(!npath)
-                                npath = [to].concat(path);
-
-                            if(nremaining.length > 0) {
-                                if(!_build_paths(npath, nremaining)) {
-                                    paths_from_start.push(npath);
-                                }
-                            }
-                        }
-                    }
-                    return c>0;
-                };
-
-                _build_paths([start], remaining);
-
-                return paths_from_start;
+                var A = parseInt(a);
+                var B = parseInt(b);
+                if(isNaN(A) && isNaN(B))
+                    return a.localeCompare(b);
+                else
+                    return (A==B ? 0 : (A<B ? -1 : 1));
             };
 
-            var is_subset = function (a, b) {
-                var i;
-                for(i=0; i<a.length; i++)
-                    if(-1 === b.indexOf(a[i])) return false;
-                return true;
-            };
-
-            var consolidate_paths = function (paths) {
-                var j, i;
-                for(i=0; i<paths.length; i++) {
-                    if(undefined===paths[i]) continue;
-                    for(j=0; j<paths.length; j++) {
-                        if(i==j) continue;
-                        if(undefined===paths[j]) continue;
-                        if(is_subset(paths[i], paths[j])) {
-                            paths[i] = undefined;
-                            break;
-                        }
-                    }
-                }
-                return paths.filter(function (u) { return u!==undefined; });
-            };
-
-            var all_paths = [];
-
-            // Build paths
-            for(i=0; i<dists.length; i++) {
-                var start = dists[i].r;
-                all_paths = all_paths.concat(build_paths(start, dists, radV));
-            }
-            all_paths = consolidate_paths(all_paths);
-
-            // Reorder each path by shortest route
-            for(i=0; i<all_paths.length; i++) {
-                all_paths[i] = route_path(all_paths[i]);
-                display_path(all_paths[i]);
-            }
-        };
-
-        paths();
+            var rows = $('tr', tbody).get();
+            rows.sort(sorter);
+            tbody.append(rows);
+        });
     };
 
     $(function () {

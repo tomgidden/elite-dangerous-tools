@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Elite Dangerous - Rare Goods calculator</title>
+    <style>
+th,td {
+  text-align:center;
+  font-size:x-small;
+  border-bottom:1px solid lightgrey;
+  padding:5px;
+}
+
+th {
+  cursor:pointer;
+}
+
+td {
+  font-size:small;
+}
+
+tr.no th,
+tr.no td {
+  border:none;
+}
+
+tr.table_title th {
+  padding-top:3em;
+  font-size:medium;
+  border-bottom: none;
+}
+.dist_dfb {
+  border-right:1px solid grey;
+}
+.toofar {
+  background-color:#fcc;
+}
+.toonear {
+  background-color:#ffc;
+}
+.clustered {
+  background-color:#ccf;
+}
+.journey {
+  background-color:#cfc;
+}
+.xref_system {
+  text-align:center;
+}
+th.xref_system {
+  width:4em;
+}
+td.x {
+  color:rgba(0,0,0,0);
+}
+select {
+  margin-right:1em;
+}
+* {
+  font-family:Helvetica;
+}
+    </style>
+  </head>
+  <body>
+    <header>
+    </header>
+
+    <div id="selector">
+    </div>
+
+    <h1>
+      Rare Goods Calculator
+    </h1>
+
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script>window.jQuery || document.write('<'+'script src="jquery-1.11.2.min.js"><\/script>')</script>
+    <script src="jquery.tablesorter.js"></script>
+    <script src="rares-data.js"></script>
+    <script src="rares.js"></script>
+  </body>
+</html>
