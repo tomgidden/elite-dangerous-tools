@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Elite Dangerous - Rare Goods calculator</title>
+    <style>
+th {
+  text-align:left;
+  font-size:small;
+}
+th,td {
+  border-bottom:1px solid lightgrey;
+  padding:5px;
+}
+tr.no th,
+tr.no td {
+  border:none;
+}
+
+tr.table_title th {
+  padding-top:3em;
+  font-size:medium;
+  border-bottom: none;
+}
+
+* {
+  font-family:Helvetica;
+}
+    </style>
+  </head>
+  <body>
+    <header>
+    </header>
+
+    <div id="selector">
+    </div>
+
+    <table id="dist_table">
+      <thead>
+        <tr class="table_title">
+          <th colspan="4">Distances from <span class="sub_base">base</span></th>
+        </tr>
+        <tr class="table_headings">
+          <th id="dist_dist">D<sub class="sub_base">base</sub> (Ly)</th>
+          <th id="dist_system">System</th>
+          <th id="dist_station">Station</th>
+          <th id="dist_dfb">Supercruise (Ls)</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+
+    <table id="paths_table">
+      <thead>
+        <tr class="table_title">
+          <th colspan="5"></th>
+        </tr>
+        <tr class="table_headings">
+          <th id="dist_dist">D<sub class="sub_base">base</sub> (Ly)</th>
+          <th id="dist_dist">&Delta;D (Ly)</th>
+          <th id="dist_system">System</th>
+          <th id="dist_station">Station</th>
+          <th id="dist_dfb">Supercruise (Ls)</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script>window.jQuery || document.write('<'+'script src="jquery-1.11.2.min.js"><\/script>')</script>
+    <script src="rares-data.js"></script>
+    <script src="rares.js"></script>
+  </body>
+</html>
