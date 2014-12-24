@@ -163,12 +163,12 @@
                 .appendTo(systemSel);
         }
 
-        form.append('Min Voyage: ');
+        form.append('Min: ');
         minSel = $('<select>')
             .attr('id', 'min')
             .appendTo(form);
 
-        form.append('Max Voyage: ');
+        form.append('Max: ');
         maxSel = $('<select>')
             .attr('id', 'max')
             .appendTo(form);
