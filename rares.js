@@ -209,7 +209,7 @@
             $('<option>')
                 .text(i+" Ly")
                 .val(i)
-                .prop('selected', i==120)
+                .prop('selected', i==140)
                 .appendTo(minSel);
 
             $('<option>')
