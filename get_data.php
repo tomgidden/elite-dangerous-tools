@@ -96,15 +96,16 @@ class Rare {
 class RaresData {
     public $spreadsheet;
     public $rares;
+    public $maxcol, $maxrow;
 
     public function __construct($html)
     {
-        $spreadsheet = self::parse_html($html);
+        $spreadsheet = $this->parse_html($html);
 
-        $this->rares = self::parse_system_data($spreadsheet);
+        $this->rares = $this->parse_system_data($spreadsheet);
     }
 
-    static public function parse_html($html)
+    public function parse_html($html)
     {
         $doc = new DOMDocument();
         $doc->loadHTML($html);
@@ -122,18 +123,25 @@ class RaresData {
                 else
                     $c += $span;
             }
+            if($c > $this->maxcol) $this->maxcol = $c;
             $r++;
         }
+        $this->maxrow = $r;
 
         return $spreadsheet;
     }
 
-    static public function parse_system_data($spreadsheet)
+    public function parse_system_data($spreadsheet)
     {
         $rares = array();
 
         // Details for each station
-        for($r = 18; $r <= 109; $r++) {
+        $r=10;
+        while($r < $this->maxrow and !preg_match('/\s*\d+\s*cr\s*$/', $spreadsheet[$r][2])) {
+            $r++;
+        }
+
+        while($r < $this->maxrow and $spreadsheet[$r][2] != 'PRICE') {
             // Standardise name
             $system = $spreadsheet[$r][6];
             $station = $spreadsheet[$r][5];
@@ -156,18 +164,34 @@ class RaresData {
                 $rare = new Rare($system, $station, $goods, $dfb, null, null, null);
                 $rares[$system] = $rare;
             }
+            $r++;
         }
 
         // Coordinates
-        for($x = 8; $x <= 100; $x++) {
-            $n = Rare::clean_name($spreadsheet[16][$x]);
-            foreach ($rares as $key=>&$rare) {
-                if($rare->system == $n) {
-                    $rare->x = $spreadsheet[11][$x];
-                    $rare->y = $spreadsheet[12][$x];
-                    $rare->z = $spreadsheet[13][$x];
+        $coordrow = null;
+        $coordcol = null;
+        for($y=1; $y < $this->maxrow and !$coordrow; $y++) {
+            for($x=1; $x < $this->maxcol and !$coordcol; $x++) {
+                if($spreadsheet[$y][$x]=='x' and $spreadsheet[$y+1][$x]=='y' and $spreadsheet[$y+2][$x]=='z') {
+                    $coordrow = $y;
+                    $coordcol = $x;
                 }
             }
+        }
+
+        $x = $coordcol;
+        while($x < $this->maxcol) {
+            if(preg_match('/[\.\-\d]+/', $spreadsheet[$coordrow][$x].$spreadsheet[$coordrow+1][$x].$spreadsheet[$coordrow+2][$x])) {
+                $n = Rare::clean_name($spreadsheet[$coordrow+5][$x]);
+                foreach ($rares as $key=>&$rare) {
+                    if($rare->system == $n) {
+                        $rare->x = $spreadsheet[$coordrow][$x];
+                        $rare->y = $spreadsheet[$coordrow+1][$x];
+                        $rare->z = $spreadsheet[$coordrow+2][$x];
+                    }
+                }
+            }
+            $x++;
         }
 
         return $rares;
