@@ -13,8 +13,8 @@ rares['Wintii'] =
         return Math.sqrt(dx*dx + dy*dy + dz*dz);
     };
 
-    var stations2 = ['39 Tauri', 'George Pantazis', 'Zeessze', 'Fujin', 'Bast', 'Altair', 'Witchhaul', 'Epsilon Indi'];
-    var stations1 = ['Uszaa', 'Orrere', 'Diso', 'Leesti', 'Lave', 'Zaonce'];//, 'Wintii'];
+    var stations1 = ['39 Tauri', 'George Pantazis', 'Zeessze', 'Fujin', 'Bast', 'Altair', 'Witchhaul', 'Epsilon Indi'];
+    var stations2 = ['Uszaa', 'Orrere', 'Diso', 'Leesti', 'Lave', 'Zaonce'];//, 'Wintii'];
 
     for(var i=0; i<stations1.length; i++)  {
         var t = 0;
