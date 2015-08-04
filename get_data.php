@@ -16,7 +16,7 @@
 
 $fn = 'data.html';
 if(!file_exists($fn)) {
-    $html = file_get_contents('https://docs.google.com/spreadsheets/d/1haUVaFIxFq5IPqZugJ8cfCEqBrZvFFzcA-uXB4pTfW4/pubhtml');
+    $html = file_get_contents('https://docs.google.com/spreadsheets/d/17Zv55yEjVdHrNzkH7BPnTCtXRs8GDHqchYjo9Svkyh4/pubhtml');
     file_put_contents($fn, $html);
 }
 else {
@@ -136,12 +136,13 @@ class RaresData {
         $rares = array();
 
         // Details for each station
-        $r=10;
-        while($r < $this->maxrow and !preg_match('/\s*\d+\s*cr\s*$/', $spreadsheet[$r][2])) {
-            $r++;
-        }
+        $r=1;
 
-        while($r < $this->maxrow and $spreadsheet[$r][2] != 'PRICE') {
+        foreach ($spreadsheet as $r => $row) {
+            if (!isset($row[2]) or !preg_match('/^\d+ cr$/', $row[2])) {
+                continue;
+            }
+
             // Standardise name
             $system = $spreadsheet[$r][6];
             $station = $spreadsheet[$r][5];
@@ -159,8 +160,7 @@ class RaresData {
 
             if(isset($rares[$system])) {
                 $rares[$system]->goods .= ' + '.$goods;
-            }
-            else {
+            } else {
                 $rare = new Rare($system, $station, $goods, $dfb, null, null, null);
                 $rares[$system] = $rare;
             }
@@ -172,7 +172,9 @@ class RaresData {
         $coordcol = null;
         for($y=1; $y < $this->maxrow and !$coordrow; $y++) {
             for($x=1; $x < $this->maxcol and !$coordcol; $x++) {
-                if($spreadsheet[$y][$x]=='x' and $spreadsheet[$y+1][$x]=='y' and $spreadsheet[$y+2][$x]=='z') {
+                if (!isset($spreadsheet[$y][$x]) or !isset($spreadsheet[$y+1][$x]) or !isset($spreadsheet[$y+2][$x])) {
+                    continue;
+                } else if($spreadsheet[$y][$x]==='x' and $spreadsheet[$y+1][$x]==='y' and $spreadsheet[$y+2][$x]==='z') {
                     $coordrow = $y;
                     $coordcol = $x;
                 }
