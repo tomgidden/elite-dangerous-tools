@@ -16,7 +16,7 @@
 
 $fn = 'data.html';
 if(!file_exists($fn)) {
-    $html = file_get_contents('https://docs.google.com/spreadsheets/d/1haUVaFIxFq5IPqZugJ8cfCEqBrZvFFzcA-uXB4pTfW4/pubhtml');
+    $html = file_get_contents('https://docs.google.com/spreadsheets/d/17Zv55yEjVdHrNzkH7BPnTCtXRs8GDHqchYjo9Svkyh4/pubhtml');
     file_put_contents($fn, $html);
 }
 else {
